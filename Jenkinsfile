@@ -10,7 +10,6 @@ pipeline {
         FRONTEND_IMAGE = 'nextjs-frontend'
         BACKEND_IMAGE  = 'springboot-backend'
         IMAGE_TAG      = "${BUILD_NUMBER}"
-        
         DOCKER_API_VERSION = '1.40'
     }
 
@@ -26,26 +25,22 @@ pipeline {
                 
                 stage('Build Frontend') {
                     steps {
-                        dir('frontend') {
-                            script {
-                                // Switched from 'npm ci' to 'npm install' to handle workspaces without a pre-existing package-lock.json
-                                sh '''
-                                    docker run --rm -v "$(pwd)":/app -w /app node:20-alpine sh -c 'npm install && npm run build'
-                                '''
-                            }
+                        script {
+                            // Mounts the pipeline workspace root and executes npm install & build directly inside the frontend folder
+                            sh '''
+                                docker run --rm -v ${WORKSPACE}:/app -w /app/frontend node:20-alpine sh -c 'npm install && npm run build'
+                            '''
                         }
                     }
                 }
 
                 stage('Build Backend') {
                     steps {
-                        dir('backend') {
-                            script {
-                                // Uses native global container 'mvn' directly to bypass the missing local wrapper script error
-                                sh '''
-                                    docker run --rm -v "$(pwd)":/app -v /root/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 sh -c 'mvn clean package -DskipTests=false'
-                                '''
-                            }
+                        script {
+                            // Mounts the pipeline workspace root and targets the pom.xml directly using the -f flag
+                            sh '''
+                                docker run --rm -v ${WORKSPACE}:/app -v /root/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 sh -c 'mvn -f backend/pom.xml clean package -DskipTests=false'
+                            '''
                         }
                     }
                 }
