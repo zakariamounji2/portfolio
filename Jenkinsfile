@@ -6,7 +6,6 @@ pipeline {
         FRONTEND_IMAGE = 'nextjs-frontend'
         BACKEND_IMAGE  = 'springboot-backend'
         IMAGE_TAG      = "${BUILD_NUMBER}"
-        DOCKER_API_VERSION = '1.40'
     }
 
     stages {
@@ -16,27 +15,23 @@ pipeline {
             }
         }
 
-        stage('Parallel Build & Test') {
+        stage('Parallel Docker Builds') {
             parallel {
                 
-                stage('Build Frontend') {
+                stage('Build Frontend Image') {
                     steps {
-                        dir('frontend') {
-                            script {
-                                // Using standard relative directory tracking paths to keep the local filesystem mount happy
-                                sh "docker run --rm -v \$(pwd):/app -w /app node:20-alpine sh -c 'npm install && npm run build'"
-                            }
+                        script {
+                            // The compilation happens natively INSIDE the multi-stage build block
+                            sh "docker build -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:latest ./frontend"
                         }
                     }
                 }
 
-                stage('Build Backend') {
+                stage('Build Backend Image') {
                     steps {
-                        dir('backend') {
-                            script {
-                                // Maps the working subdirectory to the isolated maven compiler container
-                                sh "docker run --rm -v \$(pwd):/app -v /root/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 sh -c 'mvn clean package -DskipTests=false'"
-                            }
+                        script {
+                            // The maven packaging happens safely inside the isolated container layer context
+                            sh "docker build -t ${REGISTRY_USER}/${BACKEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${BACKEND_IMAGE}:latest ./backend"
                         }
                     }
                 }
@@ -44,22 +39,11 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Deploy Stack') {
             steps {
                 script {
-                    sh "docker build -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:${IMAGE_TAG} ./frontend"
-                    sh "docker build -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:latest ./frontend"
-
-                    sh "docker build -t ${REGISTRY_USER}/${BACKEND_IMAGE}:${IMAGE_TAG} ./backend"
-                    sh "docker build -t ${REGISTRY_USER}/${BACKEND_IMAGE}:latest ./backend"
-                }
-            }
-        }
-
-        stage('Deploy / Run Stack') {
-            steps {
-                script {
-                    echo 'Images successfully built locally! Ready to deploy.'
+                    echo "Successfully built tracking tags version: ${IMAGE_TAG}"
+                    echo "Ready to run docker-compose up!"
                 }
             }
         }
