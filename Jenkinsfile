@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        REGISTRY_USER = 'zakariamounji'
+        REGISTRY_USER = 'zakariamounji2'
         FRONTEND_IMAGE = 'nextjs-frontend'
         BACKEND_IMAGE  = 'springboot-backend'
         IMAGE_TAG      = "${BUILD_NUMBER}"
