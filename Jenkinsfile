@@ -6,15 +6,11 @@ pipeline {
     }
 
     environment {
-        REGISTRY_USER = 'zakariamounji2'
+        REGISTRY_USER  = 'zakariamounji2'
         FRONTEND_IMAGE = 'nextjs-frontend'
         BACKEND_IMAGE  = 'springboot-backend'
         IMAGE_TAG      = "${BUILD_NUMBER}"
         DOCKER_API_VERSION = '1.40'
-        
-        // ⚠️ CHANGE THIS to the absolute path of your workspace on your HOST machine hard drive if known,
-        // or keep standard relative references to bypass container-in-container volume nesting bugs.
-        HOST_WORKSPACE = "/var/jenkins_home/workspace/nextjs-pipeline"
     }
 
     stages {
@@ -28,23 +24,33 @@ pipeline {
             parallel {
                 
                 stage('Build Frontend') {
+                    agent {
+                        docker {
+                            image 'node:20-alpine'
+                            // Reuses the workspace natively without broken host path mounts
+                            reuseNode true 
+                        }
+                    }
                     steps {
                         dir('frontend') {
-                            script {
-                                // By not passing complex volume mappings, we run a lightweight container mounting the relative subfolder directly
-                                sh "docker run --rm -v \$(pwd):/app -w /app node:20-alpine sh -c 'npm install && npm run build'"
-                            }
+                            sh 'npm install'
+                            sh 'npm run build'
                         }
                     }
                 }
 
                 stage('Build Backend') {
+                    agent {
+                        docker {
+                            image 'maven:3.9-eclipse-temurin-17'
+                            reuseNode true
+                            // Keeps your maven cache healthy across builds
+                            args '-v /root/.m2:/root/.m2' 
+                        }
+                    }
                     steps {
                         dir('backend') {
-                            script {
-                                // Runs maven directly inside the isolated backend workspace subdirectory execution block
-                                sh "docker run --rm -v \$(pwd):/app -v /root/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 sh -c 'mvn clean package -DskipTests=false'"
-                            }
+                            sh 'mvn clean package -DskipTests=false'
                         }
                     }
                 }
@@ -67,7 +73,7 @@ pipeline {
         stage('Deploy / Run Stack') {
             steps {
                 script {
-                    echo 'Images built locally. Ready to spin up using your root docker-compose.yml!'
+                    echo 'Images successfully built locally! Ready to deploy.'
                 }
             }
         }
