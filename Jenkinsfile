@@ -1,11 +1,19 @@
 pipeline {
     agent any
 
+    /* This tells Jenkins to load the 'docker' CLI tool layout 
+       defined in your global Global Tool Configuration dashboard
+    */
+    tools {
+        dockerTool 'docker'
+    }
+
     environment {
         REGISTRY_USER  = 'zakariamounji2'
         FRONTEND_IMAGE = 'nextjs-frontend'
         BACKEND_IMAGE  = 'springboot-backend'
         IMAGE_TAG      = "${BUILD_NUMBER}"
+        DOCKER_API_VERSION = '1.40'
     }
 
     stages {
@@ -21,7 +29,6 @@ pipeline {
                 stage('Build Frontend Image') {
                     steps {
                         script {
-                            // The compilation happens natively INSIDE the multi-stage build block
                             sh "docker build -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:latest ./frontend"
                         }
                     }
@@ -30,7 +37,6 @@ pipeline {
                 stage('Build Backend Image') {
                     steps {
                         script {
-                            // The maven packaging happens safely inside the isolated container layer context
                             sh "docker build -t ${REGISTRY_USER}/${BACKEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${BACKEND_IMAGE}:latest ./backend"
                         }
                     }
