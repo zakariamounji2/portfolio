@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        dockerTool 'docker'
-    }
-
     environment {
         REGISTRY_USER  = 'zakariamounji2'
         FRONTEND_IMAGE = 'nextjs-frontend'
@@ -24,33 +20,23 @@ pipeline {
             parallel {
                 
                 stage('Build Frontend') {
-                    agent {
-                        docker {
-                            image 'node:20-alpine'
-                            // Reuses the workspace natively without broken host path mounts
-                            reuseNode true 
-                        }
-                    }
                     steps {
                         dir('frontend') {
-                            sh 'npm install'
-                            sh 'npm run build'
+                            script {
+                                // Using standard relative directory tracking paths to keep the local filesystem mount happy
+                                sh "docker run --rm -v \$(pwd):/app -w /app node:20-alpine sh -c 'npm install && npm run build'"
+                            }
                         }
                     }
                 }
 
                 stage('Build Backend') {
-                    agent {
-                        docker {
-                            image 'maven:3.9-eclipse-temurin-17'
-                            reuseNode true
-                            // Keeps your maven cache healthy across builds
-                            args '-v /root/.m2:/root/.m2' 
-                        }
-                    }
                     steps {
                         dir('backend') {
-                            sh 'mvn clean package -DskipTests=false'
+                            script {
+                                // Maps the working subdirectory to the isolated maven compiler container
+                                sh "docker run --rm -v \$(pwd):/app -v /root/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 sh -c 'mvn clean package -DskipTests=false'"
+                            }
                         }
                     }
                 }
