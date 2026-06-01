@@ -7,7 +7,8 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.3.0</version>
-    <relativePath/> </parent>
+    <relativePath/> 
+  </parent>
 
   <groupId>com.zakaria</groupId>
   <artifactId>portfolio-backend</artifactId>
@@ -47,6 +48,8 @@
   </dependencies>
 
   <build>
+    <finalName>app</finalName>
+    
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>
