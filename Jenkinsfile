@@ -27,7 +27,7 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 script {
-                    sh "docker build -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:latest ./frontend"
+                    sh 'docker build -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:latest ./frontend'
                 }
             }
         }
@@ -35,7 +35,7 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 script {
-                    sh "docker build -t ${REGISTRY_USER}/${BACKEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${BACKEND_IMAGE}:latest ./backend"
+                    sh 'docker build -t ${REGISTRY_USER}/${BACKEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${BACKEND_IMAGE}:latest ./backend'
                 }
             }
         }
