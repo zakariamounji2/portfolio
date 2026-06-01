@@ -23,25 +23,20 @@ pipeline {
             }
         }
 
-        stage('Parallel Docker Builds') {
-            parallel {
-                
-                stage('Build Frontend Image') {
-                    steps {
-                        script {
-                            sh "docker build -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:latest ./frontend"
-                        }
-                    }
+        // REMOVED parallel block to prevent Out-Of-Memory (-1) crashes
+        stage('Build Frontend Image') {
+            steps {
+                script {
+                    sh "docker build -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${FRONTEND_IMAGE}:latest ./frontend"
                 }
+            }
+        }
 
-                stage('Build Backend Image') {
-                    steps {
-                        script {
-                            sh "docker build -t ${REGISTRY_USER}/${BACKEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${BACKEND_IMAGE}:latest ./backend"
-                        }
-                    }
+        stage('Build Backend Image') {
+            steps {
+                script {
+                    sh "docker build -t ${REGISTRY_USER}/${BACKEND_IMAGE}:${IMAGE_TAG} -t ${REGISTRY_USER}/${BACKEND_IMAGE}:latest ./backend"
                 }
-
             }
         }
 
