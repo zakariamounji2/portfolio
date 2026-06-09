@@ -1,9 +1,6 @@
 pipeline {
     agent any
 
-    /* This tells Jenkins to load the 'docker' CLI tool layout 
-       defined in your global Global Tool Configuration dashboard
-    */
     tools {
         dockerTool 'docker'
     }
