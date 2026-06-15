@@ -20,7 +20,6 @@ pipeline {
             }
         }
 
-        // REMOVED parallel block to prevent Out-Of-Memory (-1) crashes
         stage('Build Frontend Image') {
             steps {
                 script {
