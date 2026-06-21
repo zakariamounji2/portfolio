@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Code2, Layers, Boxes, Wrench, Cpu } from "lucide-react";
+import Link from 'next/link';
 
 type Category = {
   title: string;
@@ -106,9 +107,18 @@ export default function AboutStack() {
             <li>• DevOps mindset: Docker/Kubernetes pipelines with Jenkins CI/CD.</li>
             <li>• Metrics-driven monitoring with Prometheus & Grafana.</li>
           </ul>
+
+          {/* 2. Added the Connect Button Container
+          <div className="mt-5 flex justify-end">
+            <Link 
+              href="/connect" 
+              className="inline-flex items-center justify-center rounded-xl bg-cyan-500 px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-cyan-400"
+            >
+              Connect with me
+            </Link>
+          </div> */}
         </motion.div>
       </div>
     </section>
   );
 }
-
